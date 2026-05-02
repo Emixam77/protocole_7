@@ -249,11 +249,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        
+        console.log("🔑 Tentative de connexion pour:", email);
+        
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        
         if (error) {
+            console.error("❌ Erreur Auth Supabase:", error);
             loginError.style.display = 'block';
-            loginError.innerText = `ERREUR: ${error.message.toUpperCase()}`;
+            
+            let msg = error.message.toUpperCase();
+            if (msg.includes("CONFIRM")) msg = "VEUILLEZ CONFIRMER VOTRE EMAIL (CHECK SPAMS)";
+            if (msg.includes("INVALID LOGIN")) msg = "EMAIL OU MOT DE PASSE INCORRECT";
+            
+            loginError.innerText = `ERREUR: ${msg}`;
         } else {
+            console.log("✅ Connexion réussie !", data.user);
             showDashboard(data.user);
         }
     });
