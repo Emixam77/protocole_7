@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocole 7 Jours | Opération Signature</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="login-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2000; display: flex; align-items: center; justify-content: center;">
+        <div class="card" style="width: 100%; max-width: 400px; padding: 3rem;">
+            <h2 style="margin-bottom: 2rem; text-align: center;">AUTHENTIFICATION</h2>
+            <form id="login-form">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 0.5rem;">EMAIL_ID</label>
+                    <input type="email" id="email" required style="width: 100%; background: none; border: var(--border-width) solid var(--border-color); color: #fff; padding: 0.8rem; font-family: var(--font-mono);">
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <label style="display: block; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 0.5rem;">ACCESS_KEY</label>
+                    <input type="password" id="password" required style="width: 100%; background: none; border: var(--border-width) solid var(--border-color); color: #fff; padding: 0.8rem; font-family: var(--font-mono);">
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">LANCER LA SESSION</button>
+            </form>
+            <p id="login-error" style="color: var(--danger-color); font-family: var(--font-mono); font-size: 0.7rem; margin-top: 1rem; text-align: center; display: none;">ERREUR: ACCÈS REFUSÉ</p>
+        </div>
+    </div>
+
+    <!-- Pitch Modal -->
+    <div id="pitch-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center;">
+        <div class="card" style="width: 100%; max-width: 500px; padding: 2rem;">
+            <h3 id="pitch-title" style="margin-bottom: 1rem;">🎯 PITCH COMMANDO</h3>
+            <textarea id="pitch-text" style="width: 100%; height: 200px; background: #111; border: 1px solid #333; color: #fff; padding: 1rem; font-family: var(--font-mono); margin-bottom: 1.5rem; resize: none;"></textarea>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn" id="btn-copy-pitch" style="flex-grow: 1;">COPIER SCRIPT</button>
+                <button class="btn" id="btn-close-pitch" style="background: none; border: 1px solid #333;">FERMER</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="dashboard-content" style="display: none;">
+        <header>
+            <div class="logo">PROTOCOLE 7 JOURS</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="status-badge">SESSION: <span id="user-display">---</span></div>
+                <button class="btn btn-sm" id="btn-logout" style="border-color: #333;">QUITTER</button>
+            </div>
+        </header>
+
+        <section class="timeline" id="timeline">
+            <div class="day-step" data-day="1">J-1: SOURCING</div>
+            <div class="day-step" data-day="2">J-2: CONTACT</div>
+            <div class="day-step" data-day="3">J-3: RELANCE</div>
+            <div class="day-step" data-day="4">J-4: AUDIT</div>
+            <div class="day-step" data-day="5">J-5: CLOSING</div>
+            <div class="day-step" data-day="6">J-6: ONBOARDING</div>
+            <div class="day-step" data-day="7">J-7: SIGNATURE</div>
+        </section>
+
+        <!-- Missions du Jour -->
+        <div class="card" id="missions-card" style="margin-bottom: 2rem; border-color: var(--accent-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0; color: var(--accent-color);">⚡ MISSIONS DU JOUR <span id="current-day-display">1</span></h3>
+                <button class="btn btn-sm" id="btn-next-day" style="background: var(--accent-color); color: #000; border: none; font-weight: bold;">PASSER AU JOUR SUIVANT →</button>
+            </div>
+            <ul id="missions-list" style="list-style: none; padding: 0;">
+                <!-- Les missions seront injectées ici via app.js -->
+            </ul>
+        </div>
+
+        <main class="grid">
+            <div class="main-content">
+                <div class="card">
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0 0 1rem 0;">🛰️ SOURCING: LEADS DÉTECTÉS</h3>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <select id="niche-select" class="btn btn-sm" style="background: none; text-align: left; flex-grow: 1;">
+                                <option value="Yoga" style="background: #000;">YOGA & BIEN-ÊTRE</option>
+                                <option value="Clinique Esthétique" style="background: #000;">CLINIQUE & SPA</option>
+                                <option value="Artisanat" style="background: #000;">ARTISANAT PREMIUM</option>
+                                <option value="Menuiserie" style="background: #000;">MENUISERIE / ÉBÉNISTERIE</option>
+                                <option value="Garage" style="background: #000;">GARAGE PASSION</option>
+                                <option value="CrossFit" style="background: #000;">CROSSFIT & FITNESS</option>
+                                <option value="Coworking" style="background: #000;">COWORKING & SHOWROOM</option>
+                                <option value="Camping" style="background: #000;">HÔTELLERIE PLEIN AIR</option>
+                            </select>
+                            <input type="text" id="city-input" placeholder="VILLE" value="Paris" style="background: none; border: var(--border-width) solid var(--border-color); color: #fff; padding: 0.4rem; font-family: var(--font-mono); width: 80px;">
+                            <button class="btn btn-sm" id="btn-scan">SCANNER</button>
+                        </div>
+                    </div>
+                    <ul class="lead-list" id="leads-container">
+                        <!-- Les leads seront injectés ici -->
+                        <li class="lead-item" style="opacity: 0.5;">
+                            <div><em>Sélectionnez une niche et lancez le scan...</em></div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card" style="margin-top: 2rem;">
+                    <h3>📈 INTELLIGENCE ADS</h3>
+                    <p style="font-family: var(--font-mono); font-size: 0.9rem; opacity: 0.8;">
+                        > ANALYSE DES HOOKS CONCURRENTS EN COURS...<br>
+                        > ANGLE DÉTECTÉ: "ANTI-INSTAGRAM"<br>
+                        > RECOMMANDATION: UTILISER LE HOOK "LA MÉTHODE INVISIBLE" POUR MAXIMISER LE CTR.
+                    </p>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="card">
+                    <h3>👂 RADAR NEXUS</h3>
+                    <div class="radar"></div>
+                    <p style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.8rem;">
+                        <span style="color: var(--danger-color)">●</span> SIGNAL DÉTECTÉ SUR REDDIT/PHOTOPRO<br>
+                        "Comment trouver des clients sans budget pub ?"
+                    </p>
+                    <button class="btn" style="width: 100%; margin-top: 1rem;">INTERVENIR</button>
+                </div>
+
+                <div class="card" style="margin-top: 2rem;">
+                    <h3>📖 GUIDE J-3</h3>
+                    <p>Ta mission aujourd'hui : Contacter 5 leads avec le script "Gap Detection".</p>
+                    <a href="#" class="btn btn-sm" style="display: block; text-align: center; margin-top: 1rem;">VOIR LE GUIDE (PDF)</a>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
