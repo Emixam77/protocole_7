@@ -239,6 +239,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+    }
+    
     // --- Authentification ---
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
